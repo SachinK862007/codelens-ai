@@ -5,9 +5,8 @@ Evaluates code submissions against test cases and criteria
 """
 
 from typing import Dict, List, Any, Optional
-import difflib
-import re
 from pydantic import BaseModel
+import re
 
 class TestCase(BaseModel):
     input: str
@@ -145,7 +144,7 @@ class AutomatedAssessor:
             return "Consider using snake_case for variable names"
         return None
     
-    def _check_comments(self, code: code: str) -> Optional[str]:
+    def _check_comments(self, code: str) -> Optional[str]:
         """Check for adequate comments"""
         lines = code.split('\n')
         code_lines = [line for line in lines if line.strip() and not line.strip().startswith('#')]
