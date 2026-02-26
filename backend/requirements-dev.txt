@@ -1,0 +1,13 @@
+# Development dependencies
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-asyncio>=0.20.0
+httpx>=0.23.0
+black>=22.0.0
+flake8>=5.0.0
+mypy>=0.971
+pre-commit>=2.20.0
+coverage>=6.5.0
+factory-boy>=3.2.0
+freezegun>=1.2.0
+responses>=0.22.0
