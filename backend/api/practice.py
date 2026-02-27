@@ -137,7 +137,16 @@ Keep it positive and educational."""
             feedback_prompt
         )
         
-        feedback_text = ai_response["response"] if ai_response["success"] else "Great effort! Keep practicing."
+        # Extract feedback text from AI response
+        if ai_response["success"]:
+            response_obj = ai_response["response"]
+            if isinstance(response_obj, dict):
+                # If response is dict, try to get message or first available text field
+                feedback_text = response_obj.get("message") or response_obj.get("feedback") or str(response_obj)
+            else:
+                feedback_text = str(response_obj)
+        else:
+            feedback_text = "Great effort! Keep practicing."
         
         response_data = ExerciseResponse(
             success=evaluation_result["passed"],

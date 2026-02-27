@@ -7,11 +7,17 @@ Executes code in restricted environment with resource limits
 import subprocess
 import tempfile
 import os
-import signal
+import time
 from typing import Dict, Any, Optional
 import threading
 from contextlib import contextmanager
-import resource
+
+# Conditional import for Unix-only resource module
+try:
+    import resource
+    HAS_RESOURCE = True
+except ImportError:
+    HAS_RESOURCE = False
 
 class CodeExecutor:
     """Safe code execution with timeouts and resource limits"""
@@ -29,10 +35,13 @@ class CodeExecutor:
                 temp_file = f.name
             
             # Execute with timeout and resource limits
-            result = self._run_with_limits(['python3', temp_file], input_data)
+            result = self._run_with_limits(['python', temp_file], input_data)
             
             # Clean up
-            os.unlink(temp_file)
+            try:
+                os.unlink(temp_file)
+            except OSError:
+                pass
             
             return result
             
@@ -54,6 +63,8 @@ class CodeExecutor:
             
             # Compile
             executable = source_file.replace('.c', '')
+            if os.name == 'nt':
+                executable += '.exe'
             compile_result = subprocess.run(
                 ['gcc', source_file, '-o', executable],
                 capture_output=True,
@@ -74,9 +85,15 @@ class CodeExecutor:
             result = self._run_with_limits([executable], input_data)
             
             # Clean up
-            os.unlink(source_file)
+            try:
+                os.unlink(source_file)
+            except OSError:
+                pass
             if os.path.exists(executable):
-                os.unlink(executable)
+                try:
+                    os.unlink(executable)
+                except OSError:
+                    pass
             
             return result
             
@@ -98,6 +115,8 @@ class CodeExecutor:
             
             # Compile
             executable = source_file.replace('.cpp', '')
+            if os.name == 'nt':
+                executable += '.exe'
             compile_result = subprocess.run(
                 ['g++', source_file, '-o', executable],
                 capture_output=True,
@@ -118,9 +137,15 @@ class CodeExecutor:
             result = self._run_with_limits([executable], input_data)
             
             # Clean up
-            os.unlink(source_file)
+            try:
+                os.unlink(source_file)
+            except OSError:
+                pass
             if os.path.exists(executable):
-                os.unlink(executable)
+                try:
+                    os.unlink(executable)
+                except OSError:
+                    pass
             
             return result
             
@@ -135,6 +160,8 @@ class CodeExecutor:
     def _run_with_limits(self, cmd: list, input_data: str = "") -> Dict[str, Any]:
         """Run command with resource limits and timeout"""
         try:
+            start_time = time.time()
+            
             # Set up process with limits
             result = subprocess.run(
                 cmd,
@@ -145,12 +172,14 @@ class CodeExecutor:
                 cwd=tempfile.gettempdir()
             )
             
+            elapsed_time = time.time() - start_time
+            
             return {
-                "success": True,
+                "success": result.returncode == 0,
                 "output": result.stdout,
                 "error_output": result.stderr,
                 "return_code": result.returncode,
-                "execution_time": result.elapsed_time if hasattr(result, 'elapsed_time') else 0
+                "execution_time": elapsed_time
             }
             
         except subprocess.TimeoutExpired:
@@ -170,18 +199,19 @@ class CodeExecutor:
     
     @contextmanager
     def resource_limits(self):
-        """Context manager for resource limits"""
-        # Set memory limit
-        try:
-            resource.setrlimit(resource.RLIMIT_AS, (self.memory_limit, self.memory_limit))
-        except:
-            pass  # Not available on all systems
-        
-        # Set CPU time limit
-        try:
-            resource.setrlimit(resource.RLIMIT_CPU, (self.timeout, self.timeout))
-        except:
-            pass
+        """Context manager for resource limits (Unix only)"""
+        if HAS_RESOURCE:
+            # Set memory limit
+            try:
+                resource.setrlimit(resource.RLIMIT_AS, (self.memory_limit, self.memory_limit))
+            except (ValueError, OSError):
+                pass  # Not available on all systems
+            
+            # Set CPU time limit
+            try:
+                resource.setrlimit(resource.RLIMIT_CPU, (self.timeout, self.timeout))
+            except (ValueError, OSError):
+                pass
         
         yield
 

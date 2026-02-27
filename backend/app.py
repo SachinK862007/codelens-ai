@@ -4,9 +4,9 @@ Main FastAPI application for CodeLens AI
 Central application configuration and startup
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 import uvicorn
 import os
 
@@ -69,11 +69,11 @@ async def root():
 
 # Global exception handler
 @app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
+async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler"""
-    return HTTPException(
+    return JSONResponse(
         status_code=500,
-        detail=f"Internal server error: {str(exc)}"
+        content={"detail": f"Internal server error: {str(exc)}"}
     )
 
 if __name__ == "__main__":

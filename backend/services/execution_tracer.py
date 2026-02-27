@@ -11,6 +11,7 @@ import json
 from typing import List, Dict, Any
 import ast
 import threading
+import time
 
 class ExecutionTracer:
     """
@@ -21,6 +22,7 @@ class ExecutionTracer:
     def __init__(self):
         self.trace_data = []
         self.lock = threading.Lock()
+        self._output_buffer = []
         
     def trace_function(self, frame, event, arg):
         """Trace function called on each execution event"""
@@ -33,7 +35,7 @@ class ExecutionTracer:
                 "line_number": frame.f_lineno,
                 "filename": frame.f_code.co_filename,
                 "function": frame.f_code.co_name,
-                "timestamp": self._get_timestamp()
+                "timestamp": time.time()
             }
             
             # Capture local variables for line events
@@ -46,7 +48,7 @@ class ExecutionTracer:
                             locals_snapshot[name] = str(type(value).__name__)
                         else:
                             locals_snapshot[name] = repr(value)[:100]  # Limit length
-                    except:
+                    except Exception:
                         locals_snapshot[name] = "<unrepresentable>"
                         
                 trace_entry["locals"] = locals_snapshot
@@ -55,11 +57,6 @@ class ExecutionTracer:
             
         return self.trace_function
     
-    def _get_timestamp(self):
-        """Get current timestamp"""
-        import time
-        return time.time()
-    
     def execute_with_trace(self, code: str) -> Dict[str, Any]:
         """
         Execute code with tracing enabled
@@ -67,11 +64,11 @@ class ExecutionTracer:
         """
         # Reset trace data
         self.trace_data = []
+        self._output_buffer = []
         
         # Prepare execution environment
         globals_dict = {
             "__builtins__": __builtins__,
-            "print": self._capture_print
         }
         locals_dict = {}
         
@@ -96,7 +93,6 @@ class ExecutionTracer:
             sys.settrace(self.trace_function)
             
             # Record start time
-            import time
             start_time = time.time()
             
             # Execute the code
@@ -137,11 +133,6 @@ class ExecutionTracer:
             execution_result["trace"] = self.trace_data.copy()
         
         return execution_result
-    
-    def _capture_print(self, *args, **kwargs):
-        """Custom print function to capture output"""
-        # This allows us to capture print statements in the trace
-        print(*args, **kwargs)
     
     def analyze_control_flow(self, code: str) -> Dict[str, Any]:
         """

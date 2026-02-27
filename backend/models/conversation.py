@@ -32,7 +32,7 @@ class Message(MessageBase):
     metadata: Optional[Dict[str, Any]] = None  # Store code, trace data, etc.
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ConversationBase(BaseModel):
     title: Optional[str] = None
@@ -50,7 +50,7 @@ class Conversation(ConversationBase):
     message_count: int = 0
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ConversationWithMessages(Conversation):
     messages: List[Message]
@@ -90,7 +90,7 @@ class Feedback(BaseModel):
     submitted_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ConversationExport(BaseModel):
     conversation: Conversation

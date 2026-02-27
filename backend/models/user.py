@@ -4,7 +4,7 @@ User data models and authentication schemas
 Handles user registration, login, and profile management
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -21,13 +21,12 @@ class UserLogin(BaseModel):
     password: str
 
 class User(UserBase):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     is_active: bool
     created_at: datetime
     last_login: Optional[datetime] = None
-    
-    class Config:
-        orm_mode = True
 
 class UserInDB(User):
     hashed_password: str

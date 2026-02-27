@@ -7,9 +7,9 @@ Handles authentication, authorization, and security measures
 import hashlib
 import secrets
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import redis
@@ -17,8 +17,8 @@ import os
 
 from backend.config.settings import settings
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# bcrypt has a hard limit of 72 bytes per password; we'll truncate automatically
+_BCRYPT_MAX_BYTES = 72
 
 # JWT bearer security
 security = HTTPBearer()
@@ -30,23 +30,57 @@ class SecurityManager:
         self.secret_key = settings.secret_key
         self.algorithm = settings.algorithm
         self.access_token_expire_minutes = settings.access_token_expire_minutes
-        self.redis_client = redis.Redis.from_url(settings.redis_url, decode_responses=True) if settings.redis_url else None
+        try:
+            self.redis_client = redis.Redis.from_url(settings.redis_url, decode_responses=True) if settings.redis_url else None
+        except Exception:
+            self.redis_client = None
     
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        """Verify a password against its hash"""
-        return pwd_context.verify(plain_password, hashed_password)
+        """Verify a password against its hash using bcrypt directly.
+
+        The input is truncated to 72 bytes to match the behaviour of
+        ``get_password_hash`` (which already truncates before hashing).
+        """
+        if isinstance(plain_password, str):
+            plain_password = plain_password.encode("utf-8")
+        if isinstance(hashed_password, str):
+            hashed_password = hashed_password.encode("utf-8")
+
+        if len(plain_password) > _BCRYPT_MAX_BYTES:
+            plain_password = plain_password[:_BCRYPT_MAX_BYTES]
+
+        # bcrypt.checkpw will return False on invalid inputs rather than raising
+        return bcrypt.checkpw(plain_password, hashed_password)
     
     def get_password_hash(self, password: str) -> str:
-        """Generate a hash for a password"""
-        return pwd_context.hash(password)
+        """Generate a bcrypt hash for a password.
+
+        bcrypt can only process the first 72 bytes of a password.  If the caller
+        passes a longer string we truncate it silently (as recommended by the
+        underlying C library) rather than letting the bcrypt module raise a
+        confusing exception during application startup.
+        """
+        if isinstance(password, str):
+            pw_bytes = password.encode("utf-8")
+        else:
+            pw_bytes = password
+
+        if len(pw_bytes) > _BCRYPT_MAX_BYTES:
+            # truncate in the same way the C library would; we could also raise
+            # an error if that behaviour is not desired.
+            pw_bytes = pw_bytes[:_BCRYPT_MAX_BYTES]
+
+        hashed = bcrypt.hashpw(pw_bytes, bcrypt.gensalt())
+        # return string representation for storage
+        return hashed.decode("utf-8")
     
     def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None) -> str:
         """Create a JWT access token"""
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
+            expire = datetime.now(timezone.utc) + timedelta(minutes=self.access_token_expire_minutes)
         
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)

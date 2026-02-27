@@ -15,9 +15,16 @@ class SecurityHelper:
     
     @staticmethod
     def generate_password_hash(password: str) -> str:
-        """Generate bcrypt hash for password"""
+        """Generate bcrypt hash for password.
+
+        bcrypt only considers the first 72 bytes of the input; we truncate here
+        to avoid unexpected errors later on.
+        """
+        pw_bytes = password.encode('utf-8')
+        if len(pw_bytes) > 72:
+            pw_bytes = pw_bytes[:72]
         salt = bcrypt.gensalt()
-        return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+        return bcrypt.hashpw(pw_bytes, salt).decode('utf-8')
     
     @staticmethod
     def verify_password_hash(password: str, hashed: str) -> bool:

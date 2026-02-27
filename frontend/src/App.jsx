@@ -1,6 +1,6 @@
 // frontend/src/App.jsx
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
 import Footer from './components/layout/Footer';
@@ -21,7 +21,11 @@ function App() {
     // Check for saved user session
     const savedUser = localStorage.getItem('codelens-user');
     if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch (e) {
+        localStorage.removeItem('codelens-user');
+      }
     }
   }, []);
 
@@ -33,52 +37,49 @@ function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('codelens-user');
+    localStorage.removeItem('access_token');
   };
 
   if (!currentUser) {
     return (
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Routes>
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/" element={<HomePage />} />
-          </Routes>
-        </div>
-      </Router>
+      <div className="min-h-screen bg-gray-50">
+        <Routes>
+          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<HomePage />} />
+        </Routes>
+      </div>
     );
   }
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Header 
-          currentUser={currentUser} 
-          onLogout={handleLogout}
-          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
+
+      <div className="flex flex-1">
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
-        
-        <div className="flex flex-1">
-          <Sidebar 
-            isOpen={isSidebarOpen} 
-            onClose={() => setIsSidebarOpen(false)}
-          />
-          
-          <main className="flex-1 p-4 md:p-6">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/try-me" element={<TryMePage />} />
-              <Route path="/debug" element={<DebugPage />} />
-              <Route path="/ideas" element={<IdeasPage />} />
-              <Route path="/practice" element={<PracticePage />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-            </Routes>
-          </main>
-        </div>
-        
-        <Footer />
+
+        <main className="flex-1 p-4 md:p-6">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/try-me" element={<TryMePage />} />
+            <Route path="/debug" element={<DebugPage />} />
+            <Route path="/ideas" element={<IdeasPage />} />
+            <Route path="/practice" element={<PracticePage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Routes>
+        </main>
       </div>
-    </Router>
+
+      <Footer />
+    </div>
   );
 }
 

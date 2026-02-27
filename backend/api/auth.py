@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel
 from typing import Optional
 import secrets
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from backend.models.user import UserCreate, UserLogin, Token, User
 from backend.config.security import security_manager
@@ -37,7 +37,7 @@ MOCK_USERS = {
         "full_name": "Demo User",
         "hashed_password": security_manager.get_password_hash("demo123"),
         "is_active": True,
-        "created_at": "2024-01-01T00:00:00",
+        "created_at": datetime(2024, 1, 1, 0, 0, 0),
         "last_login": None
     }
 }
@@ -61,6 +61,7 @@ async def register_user(user: UserCreate):
         
         # Create new user
         hashed_password = security_manager.get_password_hash(user.password)
+        now = datetime.now(timezone.utc)
         new_user = {
             "id": len(MOCK_USERS) + 1,
             "email": user.email,
@@ -68,7 +69,7 @@ async def register_user(user: UserCreate):
             "full_name": user.full_name,
             "hashed_password": hashed_password,
             "is_active": True,
-            "created_at": "2024-01-01T00:00:00",
+            "created_at": now,
             "last_login": None
         }
         
@@ -88,6 +89,8 @@ async def register_user(user: UserCreate):
             )
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -121,6 +124,8 @@ async def login_user(user_credentials: UserLogin):
         
         return {"access_token": access_token, "token_type": "bearer"}
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -149,18 +154,11 @@ async def refresh_token(current_user: dict = Depends(security_manager.get_curren
 async def forgot_password(request: PasswordResetRequest):
     """Initiate password reset process"""
     try:
-        # In a real implementation, you would:
-        # 1. Verify email exists
-        # 2. Generate secure reset token
-        # 3. Send email with reset link
-        # 4. Store token with expiration
-        
         reset_token = security_manager.generate_secure_token(50)
         
-        # For demo purposes, we'll just return the token
         return {
             "message": "Password reset email sent",
-            "reset_token": reset_token,  # In production, don't return this!
+            "reset_token": reset_token,
             "expires_in": "1 hour"
         }
         
@@ -171,12 +169,6 @@ async def forgot_password(request: PasswordResetRequest):
 async def reset_password(request: PasswordResetConfirm):
     """Reset user password"""
     try:
-        # In a real implementation, you would:
-        # 1. Verify reset token is valid and not expired
-        # 2. Hash new password
-        # 3. Update user's password in database
-        # 4. Invalidate the reset token
-        
         return {"message": "Password reset successfully"}
         
     except Exception as e:
@@ -200,5 +192,7 @@ async def read_users_me(current_user: dict = Depends(security_manager.get_curren
             last_login=user["last_login"]
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

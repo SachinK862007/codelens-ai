@@ -1,0 +1,404 @@
+# 🎨 Visual Setup Guide
+
+A visual, step-by-step guide to get CodeLens AI running.
+
+## 📍 Where You Are Now
+
+```
+┌─────────────────────────────────────────┐
+│  YOU ARE HERE                           │
+│  ↓                                      │
+│  📁 codelens-ai/ (project folder)      │
+│                                         │
+│  Goal: Get it running on localhost     │
+└─────────────────────────────────────────┘
+```
+
+## 🗺️ The Journey (3 Steps)
+
+```
+Step 1          Step 2          Step 3
+┌─────┐        ┌─────┐        ┌─────┐
+│Setup│   →    │Start│   →    │Test │
+│     │        │     │        │     │
+└─────┘        └─────┘        └─────┘
+15 min         2 min          5 min
+```
+
+---
+
+## 📦 Step 1: Setup (15 minutes)
+
+### 1.1 Backend Setup
+
+```
+Terminal 1
+┌────────────────────────────────────────────┐
+│ $ cd codelens-ai/backend                   │
+│ $ python -m venv venv                      │
+│ $ source venv/Scripts/activate             │
+│ $ pip install -r requirements.txt          │
+│ $ cp .env.examples .env                    │
+│                                            │
+│ ✅ Backend ready!                          │
+└────────────────────────────────────────────┘
+```
+
+### 1.2 Frontend Setup
+
+```
+Terminal 2
+┌────────────────────────────────────────────┐
+│ $ cd codelens-ai/frontend                  │
+│ $ npm install                              │
+│                                            │
+│ ✅ Frontend ready!                         │
+└────────────────────────────────────────────┘
+```
+
+### 1.3 Configuration
+
+```
+Edit: backend/.env
+┌────────────────────────────────────────────┐
+│ SECRET_KEY=your-secret-key-here            │
+│ DATABASE_URL=sqlite:///./codelens.db       │
+│ ALLOWED_ORIGINS=["http://localhost:5173"]  │
+│                                            │
+│ ✅ Configuration done!                     │
+└────────────────────────────────────────────┘
+```
+
+---
+
+## 🚀 Step 2: Start (2 minutes)
+
+### 2.1 Start Backend
+
+```
+Terminal 1
+┌────────────────────────────────────────────┐
+│ $ cd codelens-ai/backend                   │
+│ $ source venv/Scripts/activate             │
+│ $ python app.py                            │
+│                                            │
+│ INFO: Uvicorn running on                   │
+│       http://0.0.0.0:8000                  │
+│                                            │
+│ ✅ Backend running!                        │
+└────────────────────────────────────────────┘
+```
+
+### 2.2 Start Frontend
+
+```
+Terminal 2
+┌────────────────────────────────────────────┐
+│ $ cd codelens-ai/frontend                  │
+│ $ npm run dev                              │
+│                                            │
+│ VITE ready in 1234 ms                      │
+│ ➜ Local: http://localhost:5173/           │
+│                                            │
+│ ✅ Frontend running!                       │
+└────────────────────────────────────────────┘
+```
+
+---
+
+## ✅ Step 3: Test (5 minutes)
+
+### 3.1 Check Backend
+
+```
+Browser: http://localhost:8000/health
+┌────────────────────────────────────────────┐
+│ {                                          │
+│   "status": "healthy",                     │
+│   "app_name": "CodeLens AI",               │
+│   "version": "1.0.0"                       │
+│ }                                          │
+│                                            │
+│ ✅ Backend healthy!                        │
+└────────────────────────────────────────────┘
+```
+
+### 3.2 Check Frontend
+
+```
+Browser: http://localhost:5173
+┌────────────────────────────────────────────┐
+│                                            │
+│     ╔═══════════════════════════╗          │
+│     ║     CodeLens AI           ║          │
+│     ║                           ║          │
+│     ║  [Login]  [Register]      ║          │
+│     ║                           ║          │
+│     ╚═══════════════════════════╝          │
+│                                            │
+│ ✅ Frontend loaded!                        │
+└────────────────────────────────────────────┘
+```
+
+### 3.3 Test Features
+
+```
+1. Register → 2. Login → 3. Try "Try Me"
+   ┌─────┐      ┌─────┐      ┌─────┐
+   │ ✅  │  →   │ ✅  │  →   │ ✅  │
+   └─────┘      └─────┘      └─────┘
+```
+
+---
+
+## 🎯 System Overview
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    YOUR COMPUTER                     │
+│                                                      │
+│  ┌──────────────┐              ┌──────────────┐    │
+│  │   Terminal 1 │              │   Terminal 2 │    │
+│  │              │              │              │    │
+│  │   Backend    │              │   Frontend   │    │
+│  │   Port 8000  │◄────────────►│   Port 5173  │    │
+│  │              │   REST API   │              │    │
+│  └──────────────┘              └──────────────┘    │
+│         │                              │            │
+│         │                              │            │
+│         ▼                              ▼            │
+│  ┌──────────────┐              ┌──────────────┐    │
+│  │   Database   │              │   Browser    │    │
+│  │   SQLite     │              │   Chrome     │    │
+│  └──────────────┘              └──────────────┘    │
+│                                                      │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔄 Data Flow
+
+```
+User Action in Browser
+        │
+        ▼
+┌───────────────┐
+│   Frontend    │  http://localhost:5173
+│   (React)     │
+└───────┬───────┘
+        │ HTTP Request
+        ▼
+┌───────────────┐
+│   Backend     │  http://localhost:8000
+│   (FastAPI)   │
+└───────┬───────┘
+        │ Query
+        ▼
+┌───────────────┐
+│   Database    │  codelens.db
+│   (SQLite)    │
+└───────────────┘
+```
+
+---
+
+## 📊 Port Map
+
+```
+┌──────────┬─────────┬──────────────────────────┐
+│ Service  │  Port   │  URL                     │
+├──────────┼─────────┼──────────────────────────┤
+│ Frontend │  5173   │ http://localhost:5173    │
+│ Backend  │  8000   │ http://localhost:8000    │
+│ API Docs │  8000   │ http://localhost:8000/docs│
+│ Health   │  8000   │ http://localhost:8000/health│
+└──────────┴─────────┴──────────────────────────┘
+```
+
+---
+
+## 🎨 Terminal Layout
+
+```
+┌─────────────────────────┬─────────────────────────┐
+│     Terminal 1          │     Terminal 2          │
+│     (Backend)           │     (Frontend)          │
+├─────────────────────────┼─────────────────────────┤
+│                         │                         │
+│ $ cd backend            │ $ cd frontend           │
+│ $ source venv/...       │ $ npm run dev           │
+│ $ python app.py         │                         │
+│                         │                         │
+│ INFO: Uvicorn running   │ VITE ready              │
+│ on http://0.0.0.0:8000  │ Local: http://...5173   │
+│                         │                         │
+│ [Keep this running]     │ [Keep this running]     │
+│                         │                         │
+└─────────────────────────┴─────────────────────────┘
+```
+
+---
+
+## ✅ Success Indicators
+
+### Backend Running ✅
+```
+Terminal 1 shows:
+┌────────────────────────────────────────────┐
+│ INFO: Started server process [12345]       │
+│ INFO: Waiting for application startup.     │
+│ INFO: Application startup complete.        │
+│ INFO: Uvicorn running on                   │
+│       http://0.0.0.0:8000                  │
+└────────────────────────────────────────────┘
+```
+
+### Frontend Running ✅
+```
+Terminal 2 shows:
+┌────────────────────────────────────────────┐
+│ VITE v4.2.0 ready in 1234 ms               │
+│                                            │
+│ ➜ Local:   http://localhost:5173/         │
+│ ➜ Network: use --host to expose           │
+└────────────────────────────────────────────┘
+```
+
+### Browser Working ✅
+```
+Browser shows:
+┌────────────────────────────────────────────┐
+│ ✅ No errors in console (F12)              │
+│ ✅ Page loads completely                   │
+│ ✅ Can see login/register buttons          │
+│ ✅ No CORS errors                          │
+└────────────────────────────────────────────┘
+```
+
+---
+
+## ❌ Common Errors & Fixes
+
+### Error 1: Port Already in Use
+```
+❌ Error: Address already in use
+┌────────────────────────────────────────────┐
+│ Fix: Use different port                    │
+│                                            │
+│ Backend:                                   │
+│ $ uvicorn app:app --reload --port 8001     │
+│                                            │
+│ Frontend:                                  │
+│ $ npm run dev -- --port 5174               │
+└────────────────────────────────────────────┘
+```
+
+### Error 2: Module Not Found
+```
+❌ Error: ModuleNotFoundError
+┌────────────────────────────────────────────┐
+│ Fix: Activate virtual environment          │
+│                                            │
+│ $ source venv/Scripts/activate             │
+│                                            │
+│ You should see (venv) in prompt:           │
+│ (venv) $                                   │
+└────────────────────────────────────────────┘
+```
+
+### Error 3: CORS Error
+```
+❌ Error: CORS policy blocked
+┌────────────────────────────────────────────┐
+│ Fix: Check backend/.env                    │
+│                                            │
+│ ALLOWED_ORIGINS=[                          │
+│   "http://localhost:5173",                 │
+│   "http://localhost:8000"                  │
+│ ]                                          │
+└────────────────────────────────────────────┘
+```
+
+---
+
+## 🎯 Quick Checklist
+
+```
+Setup Phase:
+□ Python 3.9+ installed
+□ Node.js 16+ installed
+□ Backend dependencies installed
+□ Frontend dependencies installed
+□ .env file created and configured
+
+Running Phase:
+□ Terminal 1: Backend running
+□ Terminal 2: Frontend running
+□ No errors in terminals
+□ Backend health check passes
+□ Frontend loads in browser
+
+Testing Phase:
+□ Can register new user
+□ Can login successfully
+□ Can access "Try Me" feature
+□ Can execute sample code
+□ No errors in browser console
+```
+
+---
+
+## 🎓 What Each Part Does
+
+```
+┌─────────────────────────────────────────────────────┐
+│                                                      │
+│  Frontend (React)                                    │
+│  ├─ User Interface                                   │
+│  ├─ Code Editor (Monaco)                             │
+│  ├─ Visualizations (D3.js)                           │
+│  └─ API Client (Axios)                               │
+│                                                      │
+│  Backend (FastAPI)                                   │
+│  ├─ API Endpoints                                    │
+│  ├─ Code Execution                                   │
+│  ├─ AI Integration                                   │
+│  └─ Database Management                              │
+│                                                      │
+│  Database (SQLite)                                   │
+│  ├─ User Data                                        │
+│  ├─ Exercises                                        │
+│  ├─ Submissions                                      │
+│  └─ Conversations                                    │
+│                                                      │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🚀 Next Steps After Success
+
+```
+1. Local ✅ → 2. Docker 🐳 → 3. Kubernetes ☸️
+   (Done!)      (Next)         (Final)
+```
+
+---
+
+## 📚 Need More Help?
+
+```
+┌─────────────────────────────────────────────┐
+│  Quick Start     → QUICK_START.md           │
+│  Detailed Guide  → LOCAL_SETUP_GUIDE.md     │
+│  Commands        → COMMANDS_CHEATSHEET.md   │
+│  Architecture    → ARCHITECTURE_SIMPLE.md   │
+│  Checklist       → DEPLOYMENT_CHECKLIST.md  │
+│  All Docs        → DOCUMENTATION_INDEX.md   │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+**🎉 You've got this! Follow the visual steps and you'll be running in no time!**

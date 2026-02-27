@@ -85,3 +85,5 @@ export const useVoice = () => {
   }
   return context;
 };
+
+export { VoiceContext };

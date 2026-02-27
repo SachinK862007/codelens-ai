@@ -50,6 +50,51 @@ class FlowchartGenerator:
         lines.append(f"    {current_node} --> Z[End]")
         return "\n".join(lines)
     
+    def _generate_sequence_diagram(self, tree: ast.AST) -> str:
+        """Generate sequence diagram from AST showing function calls"""
+        lines = ["sequenceDiagram"]
+        lines.append("    participant Main")
+        
+        # Find all function definitions
+        functions = []
+        calls = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                functions.append(node.name)
+                lines.append(f"    participant {node.name}")
+            elif isinstance(node, ast.Call):
+                if hasattr(node.func, 'id'):
+                    calls.append(node.func.id)
+        
+        # Add function call arrows
+        for call_name in calls:
+            if call_name in functions:
+                lines.append(f"    Main->>+{call_name}: call()")
+                lines.append(f"    {call_name}-->>-Main: return")
+            else:
+                lines.append(f"    Main->>Main: {call_name}()")
+        
+        if not calls:
+            lines.append("    Main->>Main: Execute code")
+        
+        return "\n".join(lines)
+    
+    def _generate_basic_flowchart(self, tree: ast.AST) -> str:
+        """Generate a simple basic flowchart from AST"""
+        lines = ["graph TD"]
+        lines.append("    START([Start])")
+        
+        steps = self._analyze_main_logic(tree)
+        prev_node = "START"
+        
+        for i, step in enumerate(steps):
+            node_id = f"S{i}"
+            lines.append(f"    {prev_node} --> {node_id}[{step}]")
+            prev_node = node_id
+        
+        lines.append(f"    {prev_node} --> END([End])")
+        return "\n".join(lines)
+    
     def _analyze_main_logic(self, tree: ast.AST) -> List[str]:
         """Analyze main code logic"""
         steps = []

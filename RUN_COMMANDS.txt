@@ -1,0 +1,203 @@
+================================================================================
+                    CODELENS AI - COMMAND REFERENCE
+================================================================================
+
+STEP-BY-STEP COMMANDS TO RUN LOCALLY
+================================================================================
+
+TERMINAL 1 - BACKEND SETUP
+--------------------------------------------------------------------------------
+1. Navigate to backend:
+   cd codelens-ai/backend
+
+2. Create virtual environment:
+   python -m venv venv
+
+3. Activate virtual environment:
+   Windows (bash):     source venv/Scripts/activate
+   Windows (cmd):      venv\Scripts\activate.bat
+   Windows (PS):       .\venv\Scripts\Activate.ps1
+   Linux/Mac:          source venv/bin/activate
+
+4. Upgrade pip:
+   pip install --upgrade pip
+
+5. Install dependencies:
+   pip install -r requirements.txt
+
+6. Create environment file:
+   cp .env.examples .env
+
+7. Edit .env file (use notepad or any editor):
+   notepad .env
+   
+   Minimum required settings:
+   SECRET_KEY=change-this-to-something-random-and-secure
+   DATABASE_URL=sqlite:///./codelens.db
+   ALLOWED_ORIGINS=["http://localhost:5173", "http://localhost:8000"]
+
+8. Initialize database:
+   python -c "from database.connection import Base, engine; Base.metadata.create_all(bind=engine)"
+
+9. Start backend server:
+   python app.py
+
+   OR using uvicorn:
+   uvicorn app:app --reload --host 0.0.0.0 --port 8000
+
+Backend should now be running at: http://localhost:8000
+Test it: http://localhost:8000/health
+
+
+TERMINAL 2 - FRONTEND SETUP
+--------------------------------------------------------------------------------
+1. Navigate to frontend:
+   cd codelens-ai/frontend
+
+2. Install dependencies:
+   npm install
+
+   If errors occur, try:
+   npm install --legacy-peer-deps
+
+3. Start frontend server:
+   npm run dev
+
+Frontend should now be running at: http://localhost:5173
+
+
+VERIFICATION STEPS
+================================================================================
+1. Open browser and visit:
+   - Frontend:     http://localhost:5173
+   - Backend:      http://localhost:8000
+   - Health Check: http://localhost:8000/health
+   - API Docs:     http://localhost:8000/docs
+
+2. Test the application:
+   - Register a new user
+   - Login
+   - Try the "Try Me" feature with Python code
+   - Test other features
+
+
+STOPPING THE APPLICATION
+================================================================================
+1. Stop Backend:  Press Ctrl+C in Terminal 1
+2. Stop Frontend: Press Ctrl+C in Terminal 2
+3. Deactivate venv: deactivate
+
+
+TROUBLESHOOTING
+================================================================================
+
+Problem: Port 8000 already in use
+Solution: Use different port
+   uvicorn app:app --reload --port 8001
+
+Problem: Port 5173 already in use
+Solution: Use different port
+   npm run dev -- --port 5174
+
+Problem: PyAudio installation fails
+Solution: Skip it (only needed for voice features)
+   pip install fastapi uvicorn pydantic sqlalchemy alembic requests
+
+Problem: CORS errors in browser
+Solution: Check backend/.env file has correct ALLOWED_ORIGINS
+
+Problem: Database errors
+Solution: Delete and recreate database
+   rm codelens.db
+   python -c "from database.connection import Base, engine; Base.metadata.create_all(bind=engine)"
+
+Problem: Module not found errors
+Solution: Make sure virtual environment is activated
+   source venv/Scripts/activate
+
+
+OPTIONAL: SEED DATABASE WITH SAMPLE DATA
+================================================================================
+cd backend
+python database/seeds/run_seeds.py
+
+
+NEXT STEPS AFTER LOCAL TESTING
+================================================================================
+1. ✅ Verify all features work locally
+2. 🐳 Docker deployment (see docker/docker-compose.yml)
+3. ☸️ Kubernetes deployment (create k8s manifests)
+
+
+USEFUL COMMANDS
+================================================================================
+
+Backend:
+--------
+# Run tests
+cd backend
+pytest
+
+# Check code quality
+pylint backend/
+
+# Database migrations
+alembic revision --autogenerate -m "description"
+alembic upgrade head
+
+Frontend:
+---------
+# Run tests
+cd frontend
+npm test
+
+# Lint code
+npm run lint
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+
+ENVIRONMENT VARIABLES (backend/.env)
+================================================================================
+Required:
+  SECRET_KEY                    - Random secret for JWT tokens
+  DATABASE_URL                  - Database connection string
+  ALLOWED_ORIGINS              - CORS allowed origins
+
+Optional:
+  CLAUDE_API_KEY               - For AI features
+  OLLAMA_HOST                  - For local AI model
+  REDIS_URL                    - For caching
+  VOICE_ENABLED                - Enable voice features
+
+
+DIRECTORY STRUCTURE
+================================================================================
+codelens-ai/
+├── backend/              # Python FastAPI backend
+│   ├── api/             # API endpoints
+│   ├── models/          # Database models
+│   ├── services/        # Business logic
+│   ├── database/        # Database setup
+│   ├── config/          # Configuration
+│   ├── utils/           # Utilities
+│   └── app.py           # Main application
+├── frontend/            # React frontend
+│   ├── src/            # Source code
+│   └── public/         # Static files
+├── docker/             # Docker configuration
+└── docs/               # Documentation
+
+
+SUPPORT
+================================================================================
+- Check logs in both terminals for errors
+- Review LOCAL_SETUP_GUIDE.md for detailed instructions
+- Check DEPLOYMENT_CHECKLIST.md for deployment steps
+- Visit http://localhost:8000/docs for API documentation
+
+================================================================================

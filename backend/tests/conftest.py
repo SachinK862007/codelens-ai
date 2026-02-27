@@ -6,6 +6,7 @@ Pytest configuration and shared test fixtures
 
 import pytest
 from fastapi.testclient import TestClient
+from unittest.mock import patch, MagicMock, AsyncMock
 import sys
 import os
 
@@ -86,16 +87,28 @@ def mock_user():
     }
 
 @pytest.fixture(autouse=True)
-def setup_test_environment():
-    """Setup test environment before each test"""
-    # Set test environment variables
-    os.environ["TESTING"] = "True"
-    os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+def mock_ai_engine_setup():
+    """Setup AI engine mocking for all tests"""
+    async def mock_generate_response(system_prompt, user_content, model=None):
+        return {
+            "success": True,
+            "response": {
+                "error_explanation": "Mock error explanation",
+                "corrected_code": "# Fixed code",
+                "mermaid_flowchart": "graph TD\n    A[Start] --> B[End]",
+                "changes_explanation": "Mock fix explanation",
+                "message": "Mock response",
+                "title": "Test Project",
+                "steps": ["Step 1", "Step 2"],
+                "algorithm": "Mock algorithm",
+                "language": "python",
+                "resources": []
+            },
+            "provider": "mock"
+        }
     
-    yield
-    
-    # Cleanup after test
-    if os.path.exists("./test.db"):
-        os.remove("./test.db")
-    os.environ.pop("TESTING", None)
-    os.environ.pop("DATABASE_URL", None)
+    with patch('backend.services.ai_engine.AIEngine.generate_response', new_callable=lambda: AsyncMock(side_effect=mock_generate_response)):
+        with patch('backend.services.ai_engine.AIEngine._generate_ollama_response', new_callable=lambda: AsyncMock(side_effect=mock_generate_response)):
+            with patch('backend.services.ai_engine.AIEngine.get_debug_prompt', return_value="Debug prompt"):
+                with patch('backend.services.ai_engine.AIEngine.get_code_explanation_prompt', return_value="Explain prompt"):
+                    yield

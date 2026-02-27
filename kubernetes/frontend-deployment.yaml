@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codelens-frontend
+  labels:
+    app: codelens-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: codelens-frontend
+  template:
+    metadata:
+      labels:
+        app: codelens-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: codelens-ai/frontend:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: REACT_APP_API_URL
+          value: "http://codelens-backend-service:8000"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: codelens-frontend-service
+spec:
+  selector:
+    app: codelens-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP

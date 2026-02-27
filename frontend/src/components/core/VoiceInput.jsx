@@ -203,10 +203,10 @@ const VoiceInput = ({ onVoiceInput, onVoiceCommand, language = 'en-US' }) => {
         <div className="border rounded p-3">
           <div className="font-medium text-sm mb-2">Voice Commands</div>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="bg-gray-100 p-2 rounded">"Run my code"</div>
-            <div className="bg-gray-100 p-2 rounded">"Explain this"</div>
-            <div className="bg-gray-100 p-2 rounded">"Debug error"</div>
-            <div className="bg-gray-100 p-2 rounded">"Next step"</div>
+            <div className="bg-gray-100 p-2 rounded">&quot;Run my code&quot;</div>
+            <div className="bg-gray-100 p-2 rounded">&quot;Explain this&quot;</div>
+            <div className="bg-gray-100 p-2 rounded">&quot;Debug error&quot;</div>
+            <div className="bg-gray-100 p-2 rounded">&quot;Next step&quot;</div>
           </div>
         </div>
       </div>

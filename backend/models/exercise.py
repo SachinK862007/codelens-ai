@@ -4,7 +4,7 @@ Exercise and level data models
 Handles structured learning path and exercise management
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 from enum import Enum
@@ -41,16 +41,17 @@ class ExerciseCreate(ExerciseBase):
     hints: List[str]
 
 class Exercise(ExerciseBase):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     level_number: int
     points: int
     created_at: datetime
     is_active: bool = True
-    
-    class Config:
-        orm_mode = True
 
 class ExerciseSubmission(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     exercise_id: int
     user_id: int
@@ -61,11 +62,10 @@ class ExerciseSubmission(BaseModel):
     submitted_at: datetime
     reviewed_at: Optional[datetime] = None
     reviewer_notes: Optional[str] = None
-    
-    class Config:
-        orm_mode = True
 
 class LearningPath(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     name: str
     description: str
@@ -73,6 +73,3 @@ class LearningPath(BaseModel):
     total_levels: int
     created_at: datetime
     is_active: bool = True
-    
-    class Config:
-        orm_mode = True

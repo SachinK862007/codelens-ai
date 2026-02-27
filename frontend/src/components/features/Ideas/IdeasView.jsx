@@ -424,7 +424,7 @@ const IdeasView = () => {
             <div className="bg-white rounded-lg shadow p-12 text-center text-gray-500">
               <FaLightbulb className="mx-auto text-4xl mb-4 text-yellow-400" />
               <h3 className="text-lg font-medium mb-2">Describe Your Project Idea</h3>
-              <p>Enter your project concept above and click "Generate Plan" to get started</p>
+              <p>Enter your project concept above and click &quot;Generate Plan&quot; to get started</p>
               <div className="mt-6">
                 <ProgressBar value={35} maxValue={100} label="Idea Inspiration" color="yellow" animated />
               </div>

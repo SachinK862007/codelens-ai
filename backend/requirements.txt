@@ -1,14 +1,18 @@
 fastapi>=0.95.0
 uvicorn>=0.21.1
-pydantic>=1.10.7
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
 python-jose>=3.3.0
-passlib>=1.7.4
+# passlib was previously used for bcrypt hashing, but we now use the
+# bcrypt library directly.  Keep this commented out to avoid unnecessary
+# dependency conflicts.
+# passlib>=1.7.4
 python-multipart>=0.0.6
 sqlalchemy>=2.0.9
 alembic>=1.10.3
 pylint>=2.17.2
+# chromadb>=0.3.21  # Commented out: has Python 3.14 compatibility issues; install if needed: pip install chromadb==0.3.21
 sentence-transformers>=2.2.2
-chromadb>=0.3.21
 pyjwt>=2.6.0
 bcrypt>=4.0.1
 redis>=4.5.4
@@ -16,4 +20,4 @@ requests>=2.28.2
 anthropic>=0.3.9
 pyttsx3>=2.90
 SpeechRecognition>=3.10.0
-pyaudio>=0.2.13
+# pyaudio>=0.2.13  # Optional: requires portaudio system library; uncomment if needed

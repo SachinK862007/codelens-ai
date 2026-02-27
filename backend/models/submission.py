@@ -45,7 +45,7 @@ class CodeSubmission(CodeSubmissionBase):
     memory_usage: Optional[int] = None  # in KB
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class SubmissionReview(BaseModel):
     submission_id: int
@@ -91,7 +91,7 @@ class Achievement(BaseModel):
     user_id: int
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserProgress(BaseModel):
     user_id: int

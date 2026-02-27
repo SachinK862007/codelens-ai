@@ -186,7 +186,7 @@ const ResourceFinder = ({ topic = '', onTopicChange }) => {
         ) : (
           <div className="space-y-3">
             <div className="text-sm text-gray-600">
-              Found {filteredResources.length} resources for "{searchQuery}"
+              Found {filteredResources.length} resources for &quot;{searchQuery}&quot;
             </div>
             
             {filteredResources.map((resource) => (

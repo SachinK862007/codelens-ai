@@ -1,0 +1,28 @@
+[package]
+name = "codelens-ai"
+version = "0.1.0"
+description = "CodeLens AI - Visual Programming Tutor"
+authors = ["CodeLens AI Team"]
+license = "MIT"
+repository = "https://github.com/codelens-ai/codelens-ai"
+edition = "2021"
+rust-version = "1.53"
+
+[build-dependencies]
+tauri-build = { version = "1.2", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.2", features = ["api-all"] }
+
+[features]
+default = [ "custom-protocol" ]
+custom-protocol = [ "tauri/custom-protocol" ]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+incremental = false
+opt-level = "s"
